@@ -1,0 +1,38 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+apply plugin: 'application'
+mainClassName = 'dataproc.PigWorkflowTemplate'
+
+println 'This is executed during configuration phase'
+
+task configured {
+    println 'The project is configured'
+}
+
+task showMeCache doLast() {
+    configurations.compileClasspath.each { println it }
+}
+
+dependencies {
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    compile group: 'com.google.cloud', name: 'google-cloud-dataproc', version: '4.0.0'
+    compile group: 'com.google.cloud', name: 'google-cloud-storage', version: '1.36.0'
+    compile group: 'com.google.auth', name: 'google-auth-library-oauth2-http', version: '0.4.0'
+
+//Thanks for using https://jar-download.com
+    compile 'com.google.guava:guava:12.0'
+    compile 'io.opencensus:opencensus-api:0.28.3'
+    compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.28.3'
+    runtime 'io.opencensus:opencensus-impl:0.28.3'
+    testImplementation('junit:junit:4.13')
+    testRuntime('junit:junit:4.13')
+}
+test {
+    useJUnit()
+}

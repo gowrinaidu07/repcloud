@@ -1,0 +1,23 @@
+/.metadata/
+**/*.jar
+**/pig_*.log
+**/target
+**/classes
+**/.classpath
+**/.project
+.settings/
+**/.gradle
+**/.recommenders
+**/output
+*gradle*
+!build.gradle
+*.vscode
+**/build
+**/.bundle
+**/vendor
+**/jobs
+
+# Intellij Files
+.idea
+*.iml
+out
