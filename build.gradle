@@ -6,6 +6,7 @@ repositories {
     jcenter()
 }
 
+apply plugin: "java"
 apply plugin: 'application'
 mainClassName = 'dataproc.PigWorkflowTemplate'
 
@@ -13,6 +14,13 @@ println 'This is executed during configuration phase'
 
 task configured {
     println 'The project is configured'
+}
+
+task(runWorkflow, dependsOn: 'classes', type: JavaExec) {
+    main = 'dataproc.PigWorkflowTemplate'
+    classpath = sourceSets.main.runtimeClasspath
+    /* Can pass all the properties: */
+    systemProperties System.getProperties()
 }
 
 task showMeCache doLast() {

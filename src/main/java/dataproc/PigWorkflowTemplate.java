@@ -33,17 +33,25 @@ import java.util.concurrent.ExecutionException;
 import com.google.api.client.googleapis.auth.oauth2.*;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+// Importing HashMap class
+import java.util.HashMap;
 
 public class PigWorkflowTemplate {
 
-  public static void instantiateInlineWorkflowTemplate() throws IOException, InterruptedException {
+  public static void instantiateInlineWorkflowTemplate(HashMap options) throws IOException, InterruptedException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "aryabhatta-dev";
     String region = "us-central1";
-    instantiateInlineWorkflowTemplate(projectId, region);
+    System.out.println("options");
+    System.out.println(options);
+    String pigScript = (String) options.get("pigScript");
+    String inputDir = (String) options.get("inputDir");
+    String outputDir = (String) options.get("outputDir");
+    String inputTime = (String) options.get("inputTime");
+    instantiateInlineWorkflowTemplate(projectId, region, pigScript, inputDir, outputDir, inputTime);
   }
 
-  public static void instantiateInlineWorkflowTemplate(String projectId, String region)
+  public static void instantiateInlineWorkflowTemplate(String projectId, String region, String pigScript, String inputDir, String outputDir, String inputTime)
       throws IOException, InterruptedException {
     String myEndpoint = String.format("%s-dataproc.googleapis.com:443", region);
 
@@ -60,12 +68,13 @@ public class PigWorkflowTemplate {
       // Configure the jobs within the workflow.
       PigJob uimPigJob =
               PigJob.newBuilder()
-                      .setQueryFileUri("gs://phw-code/gcp_uim_hourly_reporting.pig")
+                      .setQueryFileUri(pigScript)
                       .addJarFileUris("gs://phw-code/phw.jar")
                       .addJarFileUris("gs://phw-code/piggybank-0.12.0-cdh5.16.2.jar")
                       .addJarFileUris("gs://phw-code/cdh5-pig12-orcstorage-1.0.3.jar")
-                      .putScriptVariables("inputdir", "gs://laas-raw/dateUTC=2022-08-05/hourUTC=00")
-                      .putScriptVariables("outputdir", "gs://laas-hourly/dateUTC=2022-08-05/hourUTC=01")
+                      .putScriptVariables("inputdir", inputDir)
+                      .putScriptVariables("outputdir", outputDir)
+                      .putScriptVariables("inputtime", inputTime)
                       .build();
       OrderedJob uimpig =
               OrderedJob.newBuilder().setPigJob(uimPigJob).setStepId("hour00").build();
@@ -110,13 +119,30 @@ public class PigWorkflowTemplate {
 
   public  static void main(String args[]){
     try{
-//      Credentials credentials = GoogleCredentials.create(new AccessToken("4324dca38848ae17a63b26ffe8ced248afd86f15", "1-1-10000"));
-//      Storage storage = StorageOptions.newBuilder()
-//              .setCredentials(credentials)
-//              .build()
-//              .getService();
-      PigWorkflowTemplate.instantiateInlineWorkflowTemplate();
+      HashMap<String, String> options = new HashMap<>();
+      options.put("inputDir", System.getProperty("inputDir"));
+      options.put("outputDir", System.getProperty("outputDir"));
+      options.put("pigScript", System.getProperty("pigScript"));
+      options.put("inputDate", System.getProperty("inputDate"));
+      options.put("inputHour", System.getProperty("inputHour"));
+      options.put("inputTime", System.getProperty("inputTime"));
+
+      System.out.println("inputDir : "+ options.get("inputDir"));
+      System.out.println("outputDir : "+ options.get("outputDir"));
+      System.out.println("pigScript : "+ options.get("pigScript"));
+      System.out.println("inputDate : "+ options.get("inputDate"));
+      System.out.println("inputHour : "+ options.get("inputHour"));
+      System.out.println("inputTime : "+ options.get("inputTime"));
+
+//      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh");
+//      formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+//      Date date = formatter.parse(options.get("inputDate") + " " + options.get("inputHour"));
+//      String time = formatter.format(date);
+//      System.out.println("date : "+ time);
+
+      PigWorkflowTemplate.instantiateInlineWorkflowTemplate(options);
     } catch (Exception e){
+      e.printStackTrace(System.out);
       System.err.println(String.format("Error running workflow main: %s ", e.getMessage()));
     }
 
