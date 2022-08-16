@@ -35,6 +35,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 // Importing HashMap class
 import java.util.HashMap;
+import java.sql.Timestamp;
 
 public class PigWorkflowTemplate {
 
@@ -47,8 +48,18 @@ public class PigWorkflowTemplate {
     String pigScript = (String) options.get("pigScript");
     String inputDir = (String) options.get("inputDir");
     String outputDir = (String) options.get("outputDir");
-    String inputTime = (String) options.get("inputTime");
-    instantiateInlineWorkflowTemplate(projectId, region, pigScript, inputDir, outputDir, inputTime);
+
+    // The below code is to fetch date and hour from input cloud storage path
+    String[] pathElements = inputDir.split("/");
+    String dateDir = pathElements[pathElements.length-2];
+    String date = dateDir.substring(dateDir.lastIndexOf('=') + 1);
+    String hourDir = pathElements[pathElements.length-1];
+    String hour = hourDir.substring(hourDir.lastIndexOf('=') + 1);
+    String inputTime = date + " " + hour + ":00:00";
+    System.out.println("Input Time: " + inputTime);
+    Timestamp timestamp = Timestamp.valueOf(inputTime);
+    System.out.println(timestamp);
+    instantiateInlineWorkflowTemplate(projectId, region, pigScript, inputDir, outputDir, timestamp.toString());
   }
 
   public static void instantiateInlineWorkflowTemplate(String projectId, String region, String pigScript, String inputDir, String outputDir, String inputTime)
@@ -123,22 +134,10 @@ public class PigWorkflowTemplate {
       options.put("inputDir", System.getProperty("inputDir"));
       options.put("outputDir", System.getProperty("outputDir"));
       options.put("pigScript", System.getProperty("pigScript"));
-      options.put("inputDate", System.getProperty("inputDate"));
-      options.put("inputHour", System.getProperty("inputHour"));
-      options.put("inputTime", System.getProperty("inputTime"));
 
       System.out.println("inputDir : "+ options.get("inputDir"));
       System.out.println("outputDir : "+ options.get("outputDir"));
       System.out.println("pigScript : "+ options.get("pigScript"));
-      System.out.println("inputDate : "+ options.get("inputDate"));
-      System.out.println("inputHour : "+ options.get("inputHour"));
-      System.out.println("inputTime : "+ options.get("inputTime"));
-
-//      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh");
-//      formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-//      Date date = formatter.parse(options.get("inputDate") + " " + options.get("inputHour"));
-//      String time = formatter.format(date);
-//      System.out.println("date : "+ time);
 
       PigWorkflowTemplate.instantiateInlineWorkflowTemplate(options);
     } catch (Exception e){
